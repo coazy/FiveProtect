@@ -23,6 +23,7 @@ Attestation → Verdikt → Freigabe oder Kick. Was fehlt:
 | ☐ **Web-UI / Dashboard** | Geplant. Betreiber haben aktuell nur die CLI (`provision`, `policy`, `accept-build`). |
 | ☐ **Multi-Server-System** | Geplant. Das Backend ist mandantenfähig, aber ein Betreiber mit mehreren Servern wird noch nicht als eine Einheit geführt. |
 | ☐ **Phasen 2–5** | TPM-Quote, vollständige Scan-Engine, Ban-Sync, Härtung — siehe [Roadmap](#roadmap). |
+| ☐ **Betriebsdokumentation** | Es gibt keine Anleitung, das Backend produktiv zu betreiben — kein Container, kein Deployment, kein Backup-Konzept. Lokal läuft es, siehe unten. |
 
 **Ich habe gerade keine Zeit für das Projekt.** Es liegt hier öffentlich, weil der Stand
 etwas taugt und der Ansatz für andere interessant sein könnte — nicht, weil es fertig ist.

@@ -1,6 +1,16 @@
 # 0007 — GitHub-Workflow und Grenzen der Branch-Absicherung
 
-**Status:** Angenommen · 2026-08-04
+**Status:** Angenommen · 2026-08-04 · **teilweise überholt seit 2026-08-11**
+
+> **Nachtrag 2026-08-11.** Das Repository ist seit dem Rebranding zu FiveProtect öffentlich.
+> Damit ist die Grundlage dieser Entscheidung entfallen: Branch-Rulesets und Required Status
+> Checks sind auf öffentlichen Repositories auch im kostenlosen Plan verfügbar, CodeQL
+> ebenfalls. Der Fehlertext unten beschreibt die Lage von damals und stimmt heute nicht mehr.
+>
+> Beides ist noch nicht eingeschaltet. Das Ruleset liegt weiterhin einsatzbereit in
+> `.github/rulesets/protect-main.json`, der Befehl steht unten. Bewusst offen gelassen, weil
+> das Projekt gerade pausiert ist und Rulesets auch die eigenen Pushes auf `main` über einen
+> Pull Request zwingen — was sich lohnt, sobald wieder regelmäßig daran gearbeitet wird.
 
 ## Kontext
 
