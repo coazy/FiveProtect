@@ -9,7 +9,7 @@
 //! to; a diagnostics file ends up in a public Discord more often than anywhere else.
 
 use std::io::{self, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::{engine, identity, log, settings};
 
@@ -17,7 +17,16 @@ const FILE_NAME: &str = "FiveProtect-Diagnose.txt";
 
 /// Writes the file and returns where it went.
 pub fn export() -> io::Result<PathBuf> {
-    let target = desktop().join(FILE_NAME);
+    export_into(&desktop())
+}
+
+/// The part that composes the file, with the directory handed in.
+///
+/// Split out for the tests: `export` always writes the same path, so two tests calling it at
+/// once raced each other — one deleted the file the other was still reading. Each test now
+/// gets its own directory, and no test writes to the developer's actual desktop.
+fn export_into(dir: &Path) -> io::Result<PathBuf> {
+    let target = dir.join(FILE_NAME);
     let mut file = std::fs::File::create(&target)?;
 
     writeln!(file, "FiveProtect Diagnose")?;
@@ -77,9 +86,17 @@ fn desktop() -> PathBuf {
 mod tests {
     use super::*;
 
+    /// A directory of this test's own, so two tests never write the same file.
+    fn scratch(name: &str) -> PathBuf {
+        let dir = std::env::temp_dir().join(format!("fiveprotect-diagnostics-{name}"));
+        std::fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
     #[test]
     fn the_export_lands_somewhere_and_says_where() {
-        let path = export().expect("diagnostics are written");
+        let dir = scratch("lands");
+        let path = export_into(&dir).expect("diagnostics are written");
         assert!(path.is_file(), "{}", path.display());
 
         let text = std::fs::read_to_string(&path).expect("readable");
@@ -87,7 +104,14 @@ mod tests {
         assert!(text.contains("--- Systemprüfung ---"), "scan section missing");
         assert!(text.contains("osBuild"), "the snapshot is not in the file");
 
-        std::fs::remove_file(&path).ok();
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn the_desktop_fallback_names_a_directory_that_exists() {
+        // The button must not fail on a machine without a Desktop folder — a profile
+        // directory or the temp directory will do, but it has to be somewhere writable.
+        assert!(desktop().is_dir(), "{}", desktop().display());
     }
 
     #[test]
@@ -97,7 +121,8 @@ mod tests {
         // the rule is enforced at the source — `worker::short_session` for the session id,
         // and the fact that no call site ever passes a nonce to the log at all. What is
         // checked here is the part `export` itself composes.
-        let path = export().expect("diagnostics are written");
+        let dir = scratch("no-secret");
+        let path = export_into(&dir).expect("diagnostics are written");
         let text = std::fs::read_to_string(&path).expect("readable");
 
         let composed = text.split("--- Protokoll ---").next().unwrap_or_default();
@@ -115,6 +140,6 @@ mod tests {
         // snapshot in this file is a picture of the machine and not an attestation.
         assert!(composed.contains(&"0".repeat(64)), "placeholder hash missing");
 
-        std::fs::remove_file(&path).ok();
+        std::fs::remove_dir_all(&dir).ok();
     }
 }
