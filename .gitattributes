@@ -1,0 +1,11 @@
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
+*.pdf binary
+*.exe binary
+*.dll binary
+
+# Generated protocol artifacts — reviewed, but collapsed in PR diffs.
+packages/protocol/generated/** linguist-generated=true

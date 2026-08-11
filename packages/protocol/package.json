@@ -1,0 +1,35 @@
+{
+  "name": "@fiveprotect/protocol",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Single source of truth for every message FiveProtect sends, plus the generators for TypeScript, Rust, C++ and Lua",
+  "license": "SEE LICENSE IN ../../LICENSE",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "generated",
+    "cpp"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "generate": "tsx src/cli/generate.ts",
+    "check": "tsx src/cli/check.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.6",
+    "vitest": "^3.2.4"
+  }
+}

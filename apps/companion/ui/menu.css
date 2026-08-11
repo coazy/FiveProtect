@@ -1,0 +1,112 @@
+/*
+ * The tray menu.
+ *
+ * Same tokens as the window, kept separately rather than sharing the stylesheet: this page
+ * needs none of the window's layout and would otherwise carry the whole thing to render four
+ * rows. The values below are duplicated on purpose and are checked against the window's by
+ * `the_menu_uses_the_same_tokens_as_the_window`.
+ */
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: block;
+  src: url('assets/manrope-variable-latin.woff2') format('woff2');
+}
+
+:root {
+  --surface: #1b1e23;
+  --surface-raised: #21252b;
+  --border: #2b3037;
+  --text: #e8eaed;
+  --text-muted: #949ca6;
+  --mint: #4ade9f;
+  --danger: #f0736f;
+  --radius-sm: 6px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: transparent;
+}
+
+body {
+  color: var(--text);
+  font-family: 'Manrope', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  overflow: hidden;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 6px;
+  gap: 1px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  /* The menu floats over whatever is behind it and needs to read as a layer, not a panel. */
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  font: inherit;
+  font-weight: 500;
+  text-align: left;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.menu button svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
+.menu button:hover {
+  background: var(--surface-raised);
+  color: var(--text);
+}
+
+.menu button:hover svg {
+  color: var(--mint);
+}
+
+.menu button.is-danger:hover {
+  color: var(--danger);
+}
+
+.menu button.is-danger:hover svg {
+  color: var(--danger);
+}
+
+.menu button:focus-visible {
+  outline: 2px solid var(--mint);
+  outline-offset: -2px;
+}
+
+.menu hr {
+  height: 1px;
+  margin: 4px 6px;
+  border: none;
+  background: var(--border);
+}

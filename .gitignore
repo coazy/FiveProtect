@@ -1,0 +1,62 @@
+# Node
+node_modules/
+*.tsbuildinfo
+.npm/
+npm-debug.log*
+coverage/
+.nyc_output/
+
+# Build output
+dist/
+build/
+out/
+target/
+*.node
+
+# Rust
+**/target/
+Cargo.lock.bak
+
+# C++ / CMake
+apps/companion/native/**/build/
+CMakeUserPresets.json
+CMakeCache.txt
+CMakeFiles/
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.dll
+*.exe
+
+# Generated protocol artifacts are committed on purpose (drift check),
+# but the generator scratch dir is not.
+.protocol-tmp/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+!**/testdata/**/*.pem
+secrets/
+
+# Editors / OS
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.recommended.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Tooling caches
+.eslintcache
+.turbo/
+.cache/
+
+# Local test artifacts
+tmp/
+*.local.json

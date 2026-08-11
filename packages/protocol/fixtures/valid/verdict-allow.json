@@ -1,0 +1,18 @@
+{
+  "decision": "allow",
+  "sessionId": "1b4e28ba-2fa1-4d3b-8f2e-9c1d0e5a7b63",
+  "reasons": [],
+  "requirements": [
+    { "requirement": "companion_attested", "status": "pass" },
+    { "requirement": "test_signing_disabled", "status": "pass" },
+    { "requirement": "kernel_debugging_disabled", "status": "pass" },
+    { "requirement": "secure_boot_enabled", "status": "pass" },
+    { "requirement": "hvci_enabled", "status": "pass" },
+    { "requirement": "tpm_attestation_valid", "status": "skipped" },
+    { "requirement": "game_process_present", "status": "pass" },
+    { "requirement": "network_origin_matches", "status": "pass" }
+  ],
+  "policyTier": "standard",
+  "evaluatedAt": "2026-08-04T14:22:33.900Z",
+  "failOpen": false
+}

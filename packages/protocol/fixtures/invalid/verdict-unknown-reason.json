@@ -1,0 +1,9 @@
+{
+  "decision": "deny",
+  "sessionId": "1b4e28ba-2fa1-4d3b-8f2e-9c1d0e5a7b63",
+  "reasons": ["vibes_were_off"],
+  "requirements": [],
+  "policyTier": "standard",
+  "evaluatedAt": "2026-08-04T14:22:33.900Z",
+  "failOpen": false
+}

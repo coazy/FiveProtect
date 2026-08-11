@@ -1,0 +1,15 @@
+{
+  "name": "@fiveprotect/companion-ui",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Companion-Oberfläche: vier Zustände, ein Fenster",
+  "license": "SEE LICENSE IN ../../../LICENSE",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "happy-dom": "^20.11.1",
+    "vitest": "^3.2.4"
+  }
+}

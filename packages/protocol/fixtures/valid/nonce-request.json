@@ -1,0 +1,10 @@
+{
+  "serverId": "8f14e45f-ceea-467a-9ba8-a53d9d0e0a3c",
+  "player": {
+    "license": "license:110000112345678",
+    "steam": "steam:110000112345678",
+    "ip": "203.0.113.42"
+  },
+  "gameBuild": "3095",
+  "protocolVersion": 1
+}

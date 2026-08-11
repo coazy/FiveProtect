@@ -1,0 +1,5 @@
+{
+  "code": "nonce_expired",
+  "message": "the nonce was issued more than 30 seconds ago",
+  "requestId": "01J9ZC4Q5T7V8W9X0Y1Z2A3B4C"
+}

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <title>FiveProtect</title>
+    <style>
+      /* The frame is a transport, not a user interface. It must never draw over the game. */
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 0;
+        height: 0;
+        overflow: hidden;
+        background: transparent;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module" src="transport.js"></script>
+  </body>
+</html>

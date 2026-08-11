@@ -1,0 +1,50 @@
+[package]
+name = "fiveprotect-companion"
+description = "The companion the player runs: localhost endpoint, scan engine, backend client, window"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish = false
+
+[[bin]]
+name = "FiveProtect"
+path = "src/main.rs"
+
+[dependencies]
+fiveprotect-core = { path = "../fiveprotect-core" }
+fiveprotect-protocol = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = "0.10"
+hex = "0.4"
+# Blocking rather than async. The companion does one thing at a time and the whole flow is
+# request, wait, request — an executor would add a dependency tree and a class of bug for
+# no concurrency this program actually has.
+ureq = { version = "2.10", default-features = false, features = ["tls", "json", "gzip"] }
+time = { version = "0.3", features = ["formatting", "macros"] }
+tao = "0.30"
+wry = "0.45"
+# Decodes the embedded tray icon. `tray-icon` wants raw RGBA, and a PNG in the repository is
+# reviewable in a way a 16 KiB byte array is not.
+png = "0.17"
+
+[target.'cfg(windows)'.dependencies.tray-icon]
+version = "0.19"
+default-features = false
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = [
+    "Win32_Foundation",
+    "Win32_Graphics_Dwm",
+    "Win32_Security",
+    "Win32_System_Registry",
+] }
+
+[build-dependencies]
+cc = "1.1"
+
+[lints]
+workspace = true

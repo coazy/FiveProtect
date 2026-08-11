@@ -1,0 +1,623 @@
+/*
+ * FiveProtect companion — visual language.
+ *
+ * Dark grey with a single mint accent, Manrope throughout. This deviates from design
+ * document 12.3, which specified the system font and a theme that follows the OS; the
+ * deviation is deliberate and recorded in ADR 0009.
+ *
+ * What has not changed is the discipline behind that section: one accent colour and no
+ * second one, no gradients, no glow, no emoji, left aligned, generous padding, status as a
+ * plain two-column list. The reference points are Tailscale and 1Password, not a gaming
+ * overlay — this window sits next to a game launcher and should read as infrastructure.
+ */
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: block;
+  /* Vendored, not fetched. The companion must render identically on a machine with no
+     network — which is exactly the machine that needs to read the blocked screen. */
+  src: url('assets/manrope-variable-latin.woff2') format('woff2');
+}
+
+:root {
+  --bg: #14161a;
+  --surface: #1b1e23;
+  --surface-raised: #21252b;
+  --border: #2b3037;
+  --border-strong: #3a4048;
+
+  --text: #e8eaed;
+  --text-muted: #949ca6;
+  --text-faint: #6b737d;
+
+  /* The one accent. Everything that means "this is fine" is this colour and nothing else
+     is, so a glance at the window is enough. */
+  --mint: #4ade9f;
+  --mint-dim: rgba(74, 222, 159, 0.14);
+  --mint-line: rgba(74, 222, 159, 0.32);
+
+  --warn: #e8b04b;
+  --warn-dim: rgba(232, 176, 75, 0.14);
+  --danger: #f0736f;
+  --danger-dim: rgba(240, 115, 111, 0.14);
+
+  --radius: 10px;
+  --radius-sm: 6px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/*
+ * The user agent hides `[hidden]` with `display: none`, but any author rule that sets
+ * `display` beats it — `.actions { display: flex }` did, and the hidden action row rendered
+ * as an empty green rectangle next to a stray button. Restating it here with the same
+ * weight the layout rules have puts the attribute back in charge.
+ */
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Manrope', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+/* --- Window ------------------------------------------------------------- */
+
+/* Fills the frameless window exactly. The shell sizes it; the page never picks its own. */
+.window {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px 0 18px;
+  height: 44px;
+  flex: none;
+  border-bottom: 1px solid var(--border);
+}
+
+.mark {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+
+.wordmark {
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  /* Takes the remaining width so the controls sit hard right and the whole strip between
+     them stays a drag target. */
+  flex: 1;
+}
+
+.window-controls {
+  display: flex;
+  gap: 2px;
+  flex: none;
+}
+
+button.chrome {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+}
+
+button.chrome svg {
+  width: 12px;
+  height: 12px;
+}
+
+button.chrome:hover {
+  background: var(--surface-raised);
+  color: var(--text);
+}
+
+button.chrome.is-close:hover {
+  background: var(--danger);
+  color: #21100f;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 22px 18px 18px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+.content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* --- State header ------------------------------------------------------- */
+
+.state {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--text-faint);
+}
+
+.state-name {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.state-note {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin: 0 0 22px 19px;
+}
+
+[data-state='ready'] .dot {
+  background: var(--mint);
+  /* Slower and softer than the checking pulse: this one says "running", not "working". */
+  animation: breathe 2.6s ease-in-out infinite;
+}
+[data-state='ready'] .state-name {
+  color: var(--mint);
+}
+
+[data-state='checking'] .dot {
+  background: var(--mint);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+[data-state='blocked'] .dot {
+  background: var(--danger);
+  box-shadow: 0 0 0 4px var(--danger-dim);
+}
+[data-state='blocked'] .state-name {
+  color: var(--danger);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 var(--mint-dim);
+  }
+  50% {
+    opacity: 0.55;
+    box-shadow: 0 0 0 5px transparent;
+  }
+}
+
+/* A ring that grows out of the dot and fades, once every few seconds. */
+@keyframes breathe {
+  0% {
+    box-shadow: 0 0 0 0 rgba(74, 222, 159, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(74, 222, 159, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(74, 222, 159, 0);
+  }
+}
+
+/* --- Waiting ------------------------------------------------------------- */
+
+.waiting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 34px 0 30px;
+  border-top: 1px solid var(--border);
+}
+
+/*
+ * Three bars rising and falling out of phase. Not a progress bar — there is nothing here to
+ * be a percentage of, and a bar that fills would be inventing one (design document 12.1).
+ * This says "still running" and nothing else.
+ */
+.pulse {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  height: 26px;
+}
+
+.pulse span {
+  width: 4px;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--border-strong);
+  transform-origin: bottom;
+  animation: rise 1.5s ease-in-out infinite;
+}
+
+.pulse span:nth-child(2) {
+  animation-delay: 0.18s;
+}
+
+.pulse span:nth-child(3) {
+  animation-delay: 0.36s;
+}
+
+/* Mint once the game has been found: the same accent that means "this part is in order". */
+.waiting[data-found='true'] .pulse span {
+  background: var(--mint);
+}
+
+@keyframes rise {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.waiting-text {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+  max-width: 30ch;
+  text-wrap: balance;
+}
+
+/* A window that animates forever is a poor neighbour to someone who asked it not to. */
+@media (prefers-reduced-motion: reduce) {
+  .pulse span,
+  .dot,
+  .progress span {
+    animation: none;
+  }
+}
+
+/* --- Progress ------------------------------------------------------------ */
+
+/*
+ * Indeterminate on purpose. Design document 12.1 rules out invented percentages: the scan
+ * has no meaningful progress to report, and a bar that claims 60% is a lie the user will
+ * eventually catch.
+ */
+.progress {
+  height: 2px;
+  background: var(--border);
+  border-radius: 1px;
+  overflow: hidden;
+  margin-bottom: 22px;
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+  width: 35%;
+  background: var(--mint);
+  border-radius: 1px;
+  animation: sweep 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+/* --- Status list --------------------------------------------------------- */
+
+.checks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+}
+
+.checks li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.check-label {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.check-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.check-value::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex: none;
+  background: currentColor;
+}
+
+.check-value[data-status='pass'] {
+  color: var(--mint);
+}
+
+/*
+ * A setting that is off is amber, not red.
+ *
+ * This list is the companion's own measurements, and the companion is never told which of
+ * them the server requires (ADR 0004). Red would be the window claiming a problem it cannot
+ * know it has — on a relaxed server every line here can be off and the player still gets in.
+ * Red is reserved for the blocked screen, where the backend has actually said no.
+ */
+.check-value[data-status='warn'],
+.check-value[data-status='fail'] {
+  color: var(--warn);
+}
+
+/* "Could not read it" is not a fault of the player's and reads as noise in colour. */
+.check-value[data-status='unknown'],
+.check-value[data-status='skipped'],
+.check-value[data-status='pending'] {
+  color: var(--text-faint);
+}
+
+.check-value[data-status='pending']::before {
+  background: none;
+  border: 1px solid currentColor;
+}
+
+/*
+ * On the blocked screen the instruction and the button come before the list.
+ *
+ * Design document 12.2 calls this the most important screen in the product. A player who has
+ * to scroll past nine status rows to find out what to do will not scroll — they will open a
+ * ticket. Order rather than markup, so there is one document and not two.
+ */
+[data-state='blocked'] .state {
+  order: -4;
+}
+
+[data-state='blocked'] .state-note {
+  order: -3;
+}
+
+[data-state='blocked'] #callout {
+  order: -2;
+  margin-top: 0;
+}
+
+[data-state='blocked'] #actions {
+  order: -1;
+}
+
+[data-state='blocked'] .checks {
+  margin-top: 20px;
+}
+
+/*
+ * Red once the server has actually said no.
+ *
+ * Everywhere else a failing line is amber, because the companion does not know whether the
+ * server cares (ADR 0004). Here it does know: these are the server's own results, and the
+ * red ones are why the connection was refused.
+ */
+[data-state='blocked'] .check-value[data-status='fail'] {
+  color: var(--danger);
+}
+
+/* --- Callouts ------------------------------------------------------------ */
+
+.callout {
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--mint);
+  background: var(--surface-raised);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-top: 22px;
+  font-size: 13px;
+}
+
+.callout.is-ready {
+  border-left-color: var(--mint);
+  background: var(--mint-dim);
+  border-color: var(--mint-line);
+  color: var(--text);
+}
+
+.callout.is-blocked {
+  border-left-color: var(--danger);
+}
+
+.callout h2 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.callout p {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.callout.is-ready p {
+  color: var(--text);
+}
+
+/* The driver name, the command to run, the setting to find — the concrete thing the player
+   has to act on is set apart so it survives being read in a hurry. */
+.callout code {
+  font-family: 'Cascadia Mono', 'Consolas', ui-monospace, monospace;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--text);
+  user-select: text;
+}
+
+/* --- Actions ------------------------------------------------------------- */
+
+/*
+ * Stacked and full width. Side by side, the primary button was as wide as its own label and
+ * the row read as two unrelated controls; one column gives the action the weight it has and
+ * puts the secondary where a secondary belongs.
+ */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+button {
+  font: inherit;
+  font-weight: 600;
+  font-size: 13px;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-raised);
+  color: var(--text);
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+button:hover {
+  background: #272c33;
+  border-color: #454c56;
+}
+
+button.primary {
+  width: 100%;
+  background: var(--mint);
+  border-color: var(--mint);
+  color: #10231b;
+}
+
+button.primary:hover {
+  background: #5ee7ad;
+  border-color: #5ee7ad;
+}
+
+/* Borderless, so the row has one filled button and not two competing ones. */
+button.ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  border-color: transparent;
+  background: none;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+button.ghost svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
+button.ghost:hover {
+  background: var(--surface-raised);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--mint);
+  outline-offset: 2px;
+}
+
+/* --- Footer -------------------------------------------------------------- */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  color: var(--text-faint);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+.footer .server {
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+}
+
+/*
+ * Light mode is not offered. The design document had the theme follow the OS; this build
+ * commits to dark. Recorded in ADR 0009 rather than left as an accident.
+ */

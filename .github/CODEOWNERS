@@ -1,0 +1,9 @@
+# Standardbesitzer für alles im Repository
+*                           @coazy
+
+# Sicherheitskritische Bereiche — Änderungen brauchen eine ausdrückliche Freigabe.
+/packages/protocol/         @coazy
+/services/backend/src/attestation/  @coazy
+/apps/companion/            @coazy
+/.github/workflows/         @coazy
+/SECURITY.md                @coazy

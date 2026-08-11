@@ -1,0 +1,42 @@
+name: Änderungsvorschlag
+description: Neue Funktionalität oder Änderung am Verhalten vorschlagen
+labels: ['enhancement', 'triage']
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Welches Problem soll gelöst werden? Nicht die Lösung, das Problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Vorschlag
+    validations:
+      required: true
+
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Zugehörige Phase
+      description: Siehe Abschnitt 15 des Designdokuments.
+      options:
+        - '0 · Fundament'
+        - '1 · Gate'
+        - '2 · Attestation'
+        - '3 · Scan-Engine'
+        - '4 · Netzwerk'
+        - '5 · Härtung'
+        - außerhalb der Roadmap
+    validations:
+      required: true
+
+  - type: textarea
+    id: falsepositives
+    attributes:
+      label: Falsch-Positiv-Risiko
+      description: |
+        Bei neuen Erkennungen verpflichtend: Welche legitime Konstellation könnte
+        fälschlich anschlagen?

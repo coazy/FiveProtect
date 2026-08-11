@@ -1,0 +1,33 @@
+FiveProtect — Proprietary Software License
+Copyright (c) 2026 coazy. All rights reserved.
+
+This software and its source code (the "Software") are proprietary. The source is
+published for transparency and review — so that server operators and players can
+verify what the companion reads from their machines before they run it.
+
+Source-available is not open source. Publication grants no license.
+
+1. Grant. No license, right, or interest in the Software is granted except by a
+   separate written agreement signed by the copyright holder. Access to this
+   repository, or to any copy of the Software, does not constitute such an
+   agreement.
+
+2. Restrictions. Without prior written permission you may not copy, modify, merge,
+   publish, distribute, sublicense, sell, lease, or create derivative works of the
+   Software, in whole or in part, nor operate it as a service for third parties.
+
+3. Permitted use. You may read the Software, and you may compile and run it locally
+   for the sole purpose of evaluating it or verifying the claims made about it.
+   Nothing beyond that is permitted under this license.
+
+4. No Warranty. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+5. Limitation of Liability. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR
+   ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
+   OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+   USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+6. Third-Party Components. Third-party dependencies remain under their own
+   licenses. See the dependency manifests of each package.

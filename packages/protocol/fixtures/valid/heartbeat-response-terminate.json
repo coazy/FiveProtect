@@ -1,0 +1,6 @@
+{
+  "acknowledged": false,
+  "nextIntervalSeconds": 120,
+  "terminate": true,
+  "terminateReason": "banned"
+}

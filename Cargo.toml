@@ -1,0 +1,37 @@
+[workspace]
+resolver = "2"
+members = [
+    "packages/protocol/rust",
+    "apps/companion/crates/fiveprotect-core",
+    "apps/companion/crates/fiveprotect-companion",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.82"
+license = "LicenseRef-Proprietary"
+authors = ["coazy"]
+repository = "https://github.com/coazy/FiveProtect"
+publish = false
+
+[workspace.dependencies]
+fiveprotect-protocol = { path = "packages/protocol/rust" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[workspace.lints.rust]
+unsafe_code = "warn"
+missing_debug_implementations = "warn"
+
+[workspace.lints.clippy]
+# The companion runs on a machine the attacker controls. A panic there is a denial of
+# service against a paying customer's player, so the paths that can panic are made explicit.
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "warn"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = "symbols"

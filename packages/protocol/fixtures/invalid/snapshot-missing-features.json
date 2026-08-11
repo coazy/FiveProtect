@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "collectedAt": "2026-08-04T14:22:31.412Z",
+  "companionVersion": "0.1.0",
+  "companionBuildHash": "3f786850e387550fdab836ed7e6dc881de23001b3f2fd9e6a5b6b5a4c8a1f0e2",
+  "osBuild": "10.0.26100",
+  "tpm": { "present": true },
+  "probeErrors": []
+}

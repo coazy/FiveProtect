@@ -1,0 +1,61 @@
+name: Fehlermeldung
+description: Ein Fehlverhalten in FiveProtect melden
+labels: ['bug', 'triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Keine Sicherheitslücken hier melden.** Dafür gilt [SECURITY.md](../blob/main/SECURITY.md).
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Komponente
+      options:
+        - protocol
+        - backend
+        - resource (FiveM)
+        - companion
+        - scan-engine
+        - CI / Build
+        - unklar
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Was passiert
+      description: Beobachtetes Verhalten, erwartetes Verhalten.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduktion
+      placeholder: |
+        1. …
+        2. …
+        3. …
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Umgebung
+      description: Bei Companion-Problemen bitte den Diagnose-Export anhängen.
+      placeholder: |
+        Windows-Version:
+        FiveProtect-Version:
+        Secure Boot / HVCI / TPM:
+        FiveM-Build:
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      render: text

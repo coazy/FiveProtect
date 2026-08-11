@@ -1,0 +1,152 @@
+{
+  "$comment": "Shared contract fixtures. TypeScript, Rust, C++ and Lua each read this index and must agree on every entry. See packages/protocol/README.md.",
+  "valid": [
+    {
+      "schema": "SystemSnapshot",
+      "file": "valid/system-snapshot-full.json",
+      "note": "A machine that meets the standard tier."
+    },
+    {
+      "schema": "SystemSnapshot",
+      "file": "valid/system-snapshot-degraded.json",
+      "note": "No TPM, HVCI off, two probes failed. Well formed but will be denied at standard."
+    },
+    {
+      "schema": "NonceRequest",
+      "file": "valid/nonce-request.json",
+      "note": "Resource asks for a nonce; discord identifier absent."
+    },
+    {
+      "schema": "NonceResponse",
+      "file": "valid/nonce-response.json",
+      "note": "Backend answers with a 32 byte nonce."
+    },
+    {
+      "schema": "AttestationRequest",
+      "file": "valid/attestation-request.json",
+      "note": "Phase 1 attestation without a TPM quote."
+    },
+    {
+      "schema": "AttestationAck",
+      "file": "valid/attestation-ack.json",
+      "note": "Receipt only — carries no judgement (ADR 0004)."
+    },
+    {
+      "schema": "Verdict",
+      "file": "valid/verdict-allow.json",
+      "note": "Allow with the TPM requirement skipped, as in phase 1."
+    },
+    {
+      "schema": "Verdict",
+      "file": "valid/verdict-deny-hvci.json",
+      "note": "Deny that names the blocking driver — design document 7.4."
+    },
+    {
+      "schema": "LocalAttestCommand",
+      "file": "valid/local-attest-command.json",
+      "note": "NUI to companion over 127.0.0.1."
+    },
+    {
+      "schema": "LocalAttestAck",
+      "file": "valid/local-attest-ack.json",
+      "note": "The only thing the localhost endpoint returns."
+    },
+    {
+      "schema": "HeartbeatRequest",
+      "file": "valid/heartbeat-request.json",
+      "note": "Mid-session check-in."
+    },
+    {
+      "schema": "HeartbeatResponse",
+      "file": "valid/heartbeat-response-terminate.json",
+      "note": "Backend ends the session."
+    },
+    {
+      "schema": "LivenessResponse",
+      "file": "valid/liveness-grace.json",
+      "note": "Inside the grace period; the player should see a warning."
+    },
+    {
+      "schema": "ProtocolError",
+      "file": "valid/protocol-error.json",
+      "note": "Shared error envelope."
+    },
+    {
+      "schema": "CompanionOutcomeRequest",
+      "file": "valid/companion-outcome-request.json",
+      "note": "Companion asks how its own attestation was judged (ADR 0011)."
+    },
+    {
+      "schema": "CompanionPollRequest",
+      "file": "valid/companion-poll-request.json",
+      "note": "Companion asks whether somebody at this address is connecting (ADR 0010)."
+    },
+    {
+      "schema": "CompanionPollResponse",
+      "file": "valid/companion-poll-response-pending.json",
+      "note": "A nonce is waiting for this machine."
+    },
+    {
+      "schema": "CompanionPollResponse",
+      "file": "valid/companion-poll-response-empty.json",
+      "note": "Nobody is connecting. The ordinary answer, and every optional field is absent."
+    }
+  ],
+  "invalid": [
+    {
+      "schema": "SystemSnapshot",
+      "file": "invalid/snapshot-missing-features.json",
+      "reason": "required object 'features' is absent"
+    },
+    {
+      "schema": "SystemSnapshot",
+      "file": "invalid/snapshot-unknown-feature-state.json",
+      "reason": "'probably' is not a FeatureState"
+    },
+    {
+      "schema": "SystemSnapshot",
+      "file": "invalid/snapshot-injected-verdict.json",
+      "reason": "carries a 'clean' field — a companion never sends a judgement (ADR 0004)"
+    },
+    {
+      "schema": "NonceResponse",
+      "file": "invalid/nonce-response-short-nonce.json",
+      "reason": "nonce is shorter than 64 hex characters"
+    },
+    {
+      "schema": "NonceResponse",
+      "file": "invalid/nonce-response-bad-uuid.json",
+      "reason": "sessionId is not a UUID"
+    },
+    {
+      "schema": "NonceRequest",
+      "file": "invalid/nonce-request-wrong-type.json",
+      "reason": "protocolVersion is a string"
+    },
+    {
+      "schema": "Verdict",
+      "file": "invalid/verdict-unknown-reason.json",
+      "reason": "'vibes_were_off' is not a DenyReason"
+    },
+    {
+      "schema": "HeartbeatRequest",
+      "file": "invalid/heartbeat-request-negative-uptime.json",
+      "reason": "uptimeSeconds is below its minimum of 0"
+    },
+    {
+      "schema": "CompanionPollRequest",
+      "file": "invalid/companion-poll-request-wait-too-long.json",
+      "reason": "waitSeconds is above its maximum of 30, which would hold a connection open indefinitely"
+    },
+    {
+      "schema": "CompanionPollResponse",
+      "file": "invalid/companion-poll-response-short-nonce.json",
+      "reason": "a nonce that is not 64 hex characters cannot be one the backend issued"
+    },
+    {
+      "schema": "CompanionOutcomeRequest",
+      "file": "invalid/companion-outcome-request-not-a-session.json",
+      "reason": "sessionId is not a UUID, so it is not one the backend ever issued"
+    }
+  ]
+}

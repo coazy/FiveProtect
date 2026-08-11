@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "collectedAt": "2026-08-04T14:25:02.000Z",
+  "companionVersion": "0.1.0",
+  "companionBuildHash": "9f2fda9d3f786850e387550fdab836ed7e6dc881de23001b3f2fd9e6a5b6b5a4",
+  "osBuild": "10.0.19045",
+  "features": {
+    "secureBoot": "disabled",
+    "hvci": "disabled",
+    "testSigning": "disabled",
+    "kernelDebugging": "disabled",
+    "driverBlocklist": "unknown",
+    "iommu": "unknown",
+    "virtualizationBasedSecurity": "disabled"
+  },
+  "tpm": {
+    "present": false
+  },
+  "probeErrors": ["iommu_probe_access_denied", "driver_blocklist_registry_missing"]
+}

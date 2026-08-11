@@ -1,0 +1,4 @@
+# Matches the rest of the repository: 100 columns, and imports grouped so a diff shows what
+# actually changed rather than a reshuffled block.
+max_width = 100
+edition = "2021"

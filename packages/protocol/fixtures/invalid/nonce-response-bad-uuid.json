@@ -1,0 +1,8 @@
+{
+  "nonce": "a3f1c9b27e4d6081f5a2c3d4e5b6a7980123456789abcdef0123456789abcdef",
+  "sessionId": "not-a-uuid",
+  "expiresAt": "2026-08-04T14:23:01.412Z",
+  "policyTier": "standard",
+  "backendUrl": "https://api.fiveprotect.dev",
+  "protocolVersion": 1
+}

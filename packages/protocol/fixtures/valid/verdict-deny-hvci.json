@@ -1,0 +1,23 @@
+{
+  "decision": "deny",
+  "sessionId": "1b4e28ba-2fa1-4d3b-8f2e-9c1d0e5a7b63",
+  "reasons": ["policy_not_met"],
+  "requirements": [
+    { "requirement": "companion_attested", "status": "pass" },
+    { "requirement": "test_signing_disabled", "status": "pass" },
+    { "requirement": "kernel_debugging_disabled", "status": "pass" },
+    { "requirement": "secure_boot_enabled", "status": "pass" },
+    {
+      "requirement": "hvci_enabled",
+      "status": "fail",
+      "detail": "blocked by driver rtcore64.sys"
+    },
+    { "requirement": "driver_blocklist_enabled", "status": "pass" },
+    { "requirement": "iommu_enabled", "status": "warn" },
+    { "requirement": "network_origin_matches", "status": "pass" }
+  ],
+  "remediation": "Die Speicherintegrität ist abgeschaltet, weil der Treiber rtcore64.sys sie blockiert. Deinstalliere die zugehörige Software und aktiviere die Speicherintegrität unter Windows-Sicherheit → Gerätesicherheit → Kernisolierung.",
+  "policyTier": "standard",
+  "evaluatedAt": "2026-08-04T14:22:33.900Z",
+  "failOpen": false
+}

@@ -1,0 +1,190 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  lint:
+    name: Lint & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      # Consumers resolve @fiveprotect/protocol through its dist types. Without this the
+      # linter sees `any` everywhere and reports the whole backend as unsafe.
+      - run: npm run -w @fiveprotect/protocol build
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+
+  protocol-drift:
+    name: Protokoll-Drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      # Fails when a committed artifact disagrees with the schemas. The artifacts are
+      # committed so Rust, C++ and Lua build without Node; this is what stops them going
+      # stale. See ADR 0001.
+      - name: Artefakte gegen die Schemas prüfen
+        run: npm run protocol:check
+      - name: Sicherstellen, dass die Generierung nichts verändert
+        run: |
+          npm run protocol:generate
+          if ! git diff --quiet -- packages/protocol/generated; then
+            echo "::error::Generierte Artefakte sind nicht aktuell. Führe 'npm run protocol:generate' aus und committe das Ergebnis."
+            git diff --stat -- packages/protocol/generated
+            exit 1
+          fi
+
+  protocol-typescript:
+    name: Protokoll, NUI & Companion-UI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run -w @fiveprotect/protocol build
+      - run: npm run -w @fiveprotect/protocol test
+      - run: npm run -w @fiveprotect/resource test
+      - run: npm run -w @fiveprotect/companion-ui test
+
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fiveprotect_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # Without this the integration suite skips itself. It is set here on purpose: the
+      # properties it proves — single-use nonces under concurrency, tenant scoping — are
+      # properties of PostgreSQL, and a fake would only prove that the fake agrees with
+      # itself.
+      TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/fiveprotect_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run -w @fiveprotect/protocol build
+      - run: npm run -w @fiveprotect/backend test
+      - name: Sicherstellen, dass die Integrationstests wirklich gelaufen sind
+        run: |
+          # A skipped integration suite passes, which would make this job worthless the day
+          # the service container stops coming up.
+          npm run -w @fiveprotect/backend test -- --reporter=json --outputFile=../../report.json
+          node -e "
+            const report = require('./report.json');
+            const integration = report.testResults.find((f) => f.name.includes('integration'));
+            if (!integration) { console.error('no integration suite in the report'); process.exit(1); }
+            const skipped = integration.assertionResults.filter((t) => t.status !== 'passed');
+            if (skipped.length > 0) {
+              console.error('integration tests did not run:', skipped.map((t) => t.title));
+              process.exit(1);
+            }
+            console.log(\`integration suite ran \${integration.assertionResults.length} tests\`);
+          "
+
+  protocol-lua:
+    name: FiveM-Resource (Lua)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lua 5.4 installieren
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+      - run: lua5.4 tools/lua/run-all.lua
+
+  protocol-rust:
+    name: Companion (Rust)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      # Scoped to the hand-written crate. The generated protocol module is the generator's
+      # business, and reformatting it would break the byte comparison in the drift check.
+      - run: cargo fmt -p fiveprotect-core --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo test --workspace
+
+  audit:
+    name: Abhängigkeiten
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      # CodeQL would be the better tool, but code scanning needs GitHub Advanced Security
+      # and is unavailable on a private repository on the free plan — the analysis job
+      # failed at checkout with "Repository not found". See ADR 0007.
+      - name: Bekannte Schwachstellen in npm-Abhängigkeiten
+        run: npm audit --audit-level=high
+      - uses: dtolnay/rust-toolchain@stable
+      - name: cargo-audit installieren
+        run: cargo install cargo-audit --locked
+      - name: Bekannte Schwachstellen in Cargo-Abhängigkeiten
+        run: cargo audit
+
+  scan-engine:
+    name: Scan-Engine (C++)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      # No pinned generator: the hosted Windows image rolls its Visual Studio version
+      # forward, and pinning "Visual Studio 17 2022" broke the moment it did. CMake picks
+      # whatever toolchain the image ships, which is what we want from a build that only
+      # has to prove the header compiles cleanly.
+      - name: Protokoll konfigurieren
+        run: cmake -S packages/protocol/cpp -B build
+      - name: Bauen
+        run: cmake --build build --config Release
+      - name: Tests
+        run: ctest --test-dir build -C Release --output-on-failure
+      # Die Engine selbst: Windows-Proben, C-ABI und die Vertragspruefung des Snapshots.
+      - name: Scan-Engine konfigurieren
+        run: cmake -S apps/companion/native -B build-scan
+      - name: Scan-Engine bauen
+        run: cmake --build build-scan --config Release
+      - name: Scan-Engine testen
+        run: ctest --test-dir build-scan -C Release --output-on-failure
