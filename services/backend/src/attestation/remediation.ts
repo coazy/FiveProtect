@@ -64,7 +64,8 @@ const REQUIREMENT_TEXT: Partial<Record<RequirementId, (detail?: string) => strin
 };
 
 const REASON_TEXT: Partial<Record<DenyReason, string>> = {
-  companion_missing: 'FiveProtect läuft nicht. Starte die Anwendung und verbinde dich danach erneut.',
+  companion_missing:
+    'FiveProtect läuft nicht. Starte die Anwendung und verbinde dich danach erneut.',
   companion_timeout:
     'FiveProtect hat nicht rechtzeitig geantwortet. Starte die Anwendung neu und versuche es ' +
     'noch einmal.',

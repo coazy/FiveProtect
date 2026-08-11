@@ -1,7 +1,7 @@
 # Implementierungsplan — Phase 0 und Phase 1
 
 **4. August 2026** · Grundlage:
-[Designdokument](../superpowers/specs/2026-08-04-anticheat-companion-design.md) ·
+[Designdokument](../design/anticheat-companion-design.md) ·
 Umfang: Abschnitt 15, Phasen 0 und 1
 
 ---

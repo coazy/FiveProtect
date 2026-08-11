@@ -286,7 +286,8 @@ export function connectToNativeShell(document, host) {
 // imports this file to reach `render`, and it must not paint anything on the way in.
 if (typeof document !== 'undefined' && document.getElementById('window') !== null) {
   const host = globalThis.window;
-  const attached = connectToShell(document, host?.__TAURI__) || connectToNativeShell(document, host);
+  const attached =
+    connectToShell(document, host?.__TAURI__) || connectToNativeShell(document, host);
   if (!attached) {
     // Opened directly in a browser rather than through the shell. Rendering the idle state
     // keeps the page reviewable without a Rust toolchain.

@@ -144,7 +144,9 @@ if (typeof window !== 'undefined' && typeof window.addEventListener === 'functio
   });
 
   const resourceName =
-    typeof window.GetParentResourceName === 'function' ? window.GetParentResourceName() : 'fiveprotect';
+    typeof window.GetParentResourceName === 'function'
+      ? window.GetParentResourceName()
+      : 'fiveprotect';
 
   const report = (reached, port) => {
     // Informational only. The backend already knows whether an attestation arrived, and it

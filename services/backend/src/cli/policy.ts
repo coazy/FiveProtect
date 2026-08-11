@@ -68,7 +68,9 @@ async function main(): Promise<void> {
     // One tenant per local deployment. Naming which one would be the next thing to add here
     // if that ever stops being true.
     if (rows.length > 1) {
-      process.stderr.write('mehr als ein Mandant — dieser Befehl kann sie nicht auseinanderhalten\n');
+      process.stderr.write(
+        'mehr als ein Mandant — dieser Befehl kann sie nicht auseinanderhalten\n',
+      );
       process.exit(1);
     }
 

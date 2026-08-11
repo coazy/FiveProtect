@@ -132,7 +132,12 @@ jobs:
 
   protocol-rust:
     name: Companion (Rust)
-    runs-on: ubuntu-latest
+    # Windows, nicht Linux: der Companion zieht über tao/wry eine Webview herein, die auf
+    # Linux GTK und WebKit als Systembibliotheken braucht. Die zu installieren, damit ein
+    # Programm prüfbar bleibt, das ausschließlich unter Windows läuft — es linkt tbs,
+    # user32 und advapi32 und alle Proben sind Windows-Proben — wäre Aufwand für eine
+    # Plattform, auf der es nie startet.
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -155,9 +160,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
-      # CodeQL would be the better tool, but code scanning needs GitHub Advanced Security
-      # and is unavailable on a private repository on the free plan — the analysis job
-      # failed at checkout with "Repository not found". See ADR 0007.
+      # CodeQL wäre das bessere Werkzeug und ist auf einem öffentlichen Repository auch
+      # kostenlos verfügbar. Es fehlt hier nur noch, siehe ADR 0007.
       - name: Bekannte Schwachstellen in npm-Abhängigkeiten
         run: npm audit --audit-level=high
       - uses: dtolnay/rust-toolchain@stable

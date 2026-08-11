@@ -31,10 +31,9 @@ etwas taugt und der Ansatz für andere interessant sein könnte — nicht, weil 
 
 Die Adressen `api.fiveprotect.dev` und `dist.fiveprotect.dev` stehen als Defaults im Code
 (Backend-Origin des Companions, Download-Origin des Updaters). **Sie sind nicht registriert
-und antworten nicht.** Wer das ausprobieren will, betreibt das Backend selbst und trägt seine
-eigene URL ein — für den Companion heißt das, die Origin-Liste in
-`apps/companion/crates/fiveprotect-companion/src/settings.rs` anzupassen und neu zu bauen,
-weil sie bewusst im Build festgeschrieben ist und nicht vom Client kommen darf.
+und antworten nicht.** Wer das ausprobieren will, betreibt das Backend selbst — siehe
+[Lokal ausprobieren](#lokal-ausprobieren). Ein Rebuild ist dafür nicht nötig: eine Datei
+`fiveprotect.json` neben der Exe erweitert die Origin-Liste.
 
 ---
 
@@ -124,7 +123,7 @@ Weil die Anwendung auf den Rechnern von Spielern läuft, hier explizit:
 | Prozessnamen — **gehasht**, außer sie stehen auf einer Signaturliste | Tastatureingaben, Bildschirminhalte, Browserdaten |
 
 Nur Rohfakten, nie ein Urteil. Die Scan-Engine ist rein lesend. Details in Abschnitt 13 des
-[Designdokuments](docs/superpowers/specs/2026-08-04-anticheat-companion-design.md).
+[Designdokuments](docs/design/anticheat-companion-design.md).
 
 ## Architektur
 
@@ -174,33 +173,105 @@ npm run protocol:generate      # Artefakte aus den Schemas erzeugen
 npm run verify                 # Lint, Typecheck, Drift-Check und alle Tests
 ```
 
-Backend lokal starten:
+## Lokal ausprobieren
+
+Fünf Schritte vom leeren Klon zum Spieler, der durch das Gate kommt. Voraussetzung ist eine
+laufende PostgreSQL-Instanz — sonst nichts.
+
+### 1 · Datenbank, `.env`, Migrationen und Mandant
+
+Auf Windows erledigt das ein Skript. Es fragt nach dem Passwort deiner PostgreSQL-Rolle
+`postgres`, legt Rolle und Datenbank `fiveprotect` an, schreibt `services/backend/.env` mit
+frischem `NONCE_SEAL_KEY`, spielt die Migrationen ein und legt einen Mandanten an:
+
+```powershell
+npm install
+npm run protocol:generate
+.\scripts\setup-local.ps1
+```
+
+Läuft deine Datenbank woanders: `.\scripts\setup-local.ps1 -PgPort 55432 -ServerName "Mein Server"`.
+
+<details>
+<summary>Ohne das Skript (Linux, macOS, oder von Hand)</summary>
 
 ```bash
+psql -U postgres -c "create role fiveprotect with login password 'geheim'"
+psql -U postgres -c "create database fiveprotect owner fiveprotect"
+psql -U postgres -d fiveprotect -c "grant all on schema public to fiveprotect"
+
 cp services/backend/.env.example services/backend/.env
-createdb fiveprotect
+# DATABASE_URL auf die Rolle oben zeigen lassen und NONCE_SEAL_KEY setzen:
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
 npm run -w @fiveprotect/backend migrate
+npm run -w @fiveprotect/backend provision -- "Mein Server" --tier standard
+```
+
+</details>
+
+`provision` gibt eine `serverId` und einen `serverKey` aus. **Der Schlüssel wird genau einmal
+angezeigt** — er steht nur als Hash in der Datenbank.
+
+### 2 · Backend starten
+
+```bash
 npm run -w @fiveprotect/backend dev
 ```
 
-Einen Mandanten anlegen — der Schlüssel wird genau einmal angezeigt:
+Erreichbar auf `http://127.0.0.1:8080`. `GET /health` sollte antworten.
 
-```bash
-npm run -w @fiveprotect/backend provision -- "Nordstadt Roleplay" --tier standard
-```
+### 3 · Resource in den FiveM-Server
 
-In der `server.cfg` des FiveM-Servers:
+Den Ordner [`resources/fiveprotect`](resources/fiveprotect) in das `resources`-Verzeichnis des
+Servers kopieren, dann in die `server.cfg`:
 
 ```cfg
-set fiveprotect_backend    "https://dein-backend.example"   # kein gehosteter Dienst, s. o.
-set fiveprotect_server_id  "<UUID aus provision>"
-set fiveprotect_server_key "<Schlüssel aus provision>"
+set fiveprotect_backend    "http://127.0.0.1:8080"
+set fiveprotect_server_id  "<serverId aus provision>"
+set fiveprotect_server_key "<serverKey aus provision>"
 
 ensure fiveprotect
 ```
 
 Fehlt der Schlüssel, startet die Resource nicht. Eine Resource, die ohne Zugangsdaten läuft,
 würde jeden Spieler deferren und dann durchlassen — das sieht aus wie Schutz und ist keiner.
+Klartext-HTTP wird nur gegen `localhost` akzeptiert; gegen einen entfernten Host verweigert
+die Resource den Start, weil der Serverkey sonst unverschlüsselt über die Leitung ginge.
+
+### 4 · Companion bauen und auf das lokale Backend zeigen lassen
+
+```bash
+cargo build --release -p fiveprotect-companion
+```
+
+Der einkompilierte Origin ist die Produktionsadresse. Für ein eigenes Backend legst du eine
+`fiveprotect.json` **neben die Exe** — sie erweitert die Liste, ersetzt sie nicht:
+
+```json
+{ "allowedBackends": ["http://127.0.0.1:8080"] }
+```
+
+Also `target/release/fiveprotect.json` neben `target/release/FiveProtect.exe`.
+Das Setup-Skript aus Schritt 1 schreibt diese Datei bereits, wenn die Exe schon gebaut war.
+
+Dann starten: `target\release\FiveProtect.exe`. Das Fenster zeigt „Nicht verbunden — warte auf
+FiveM", das ist der erwartete Ruhezustand.
+
+### 5 · Verbinden
+
+FiveM starten, auf den Server verbinden. Der Deferral hält kurz, der Companion wechselt auf
+„Verbunden", und du bist drin.
+
+### Wenn es nicht klappt
+
+| Symptom | Ursache |
+| --- | --- |
+| `Der Anticheat-Dienst ist gerade nicht erreichbar` beim Verbinden | Backend läuft nicht oder `fiveprotect_backend` zeigt woanders hin. `curl http://127.0.0.1:8080/health` prüfen. |
+| `ECONNREFUSED` bei `migrate` | `DATABASE_URL` in der `.env` zeigt auf den falschen Port. Läuft PostgreSQL dort wirklich? |
+| `Passwort-Authentifizierung für Benutzer »…« fehlgeschlagen` | `createdb`/`psql` nimmt sonst den Windows-Benutzernamen als DB-Rolle. Immer `-U postgres` angeben. |
+| Companion bleibt auf „Nicht verbunden" | Normal, solange FiveM nicht läuft. Bleibt er es beim Verbinden, fehlt die `fiveprotect.json` neben der Exe. |
+| `FiveProtect läuft nicht` im Deferral | Companion nicht gestartet, oder er lauscht auf keinem Port aus 52800–52899. |
 
 Details je Komponente in der jeweiligen README:
 [Companion](apps/companion/README.md) ·

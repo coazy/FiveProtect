@@ -406,9 +406,9 @@ suite('connect gate', () => {
     // interval plus grace — so quitting on purpose bought three and a half minutes of
     // playing without a companion. The last heartbeat says which one it is.
     async function activeSession() {
-      const { nonce } = (
-        await requestNonce(tenant.serverKey, tenant.serverId, LOCAL_IP)
-      ).json<{ nonce: string }>();
+      const { nonce } = (await requestNonce(tenant.serverKey, tenant.serverId, LOCAL_IP)).json<{
+        nonce: string;
+      }>();
       const ack = (await attest(nonce)).json<{ sessionId: string }>();
       return ack.sessionId;
     }
@@ -539,9 +539,9 @@ suite('connect gate', () => {
     });
 
     it('stops handing out a nonce once it has been used', async () => {
-      const { nonce } = (
-        await requestNonce(tenant.serverKey, tenant.serverId, LOCAL_IP)
-      ).json<{ nonce: string }>();
+      const { nonce } = (await requestNonce(tenant.serverKey, tenant.serverId, LOCAL_IP)).json<{
+        nonce: string;
+      }>();
 
       expect((await attest(nonce)).statusCode).toBe(202);
 
@@ -554,9 +554,9 @@ suite('connect gate', () => {
     it('never reveals a verdict, not even for a session it just handed out', async () => {
       // The same rule as everywhere else (ADR 0004). This endpoint is unauthenticated, so a
       // field here would be readable by any local process.
-      const { nonce } = (
-        await requestNonce(tenant.serverKey, tenant.serverId, LOCAL_IP)
-      ).json<{ nonce: string }>();
+      const { nonce } = (await requestNonce(tenant.serverKey, tenant.serverId, LOCAL_IP)).json<{
+        nonce: string;
+      }>();
       await attest(nonce, { features: { ...snapshot().features, testSigning: 'enabled' } });
 
       await requestNonce(tenant.serverKey, tenant.serverId, LOCAL_IP);
