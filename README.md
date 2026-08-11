@@ -180,9 +180,7 @@ laufende PostgreSQL-Instanz — sonst nichts.
 
 ### 1 · Datenbank, `.env`, Migrationen und Mandant
 
-Auf Windows erledigt das ein Skript. Es fragt nach dem Passwort deiner PostgreSQL-Rolle
-`postgres`, legt Rolle und Datenbank `fiveprotect` an, schreibt `services/backend/.env` mit
-frischem `NONCE_SEAL_KEY`, spielt die Migrationen ein und legt einen Mandanten an:
+Auf Windows erledigt das ein Skript — **in PowerShell, nicht in `cmd.exe`**:
 
 ```powershell
 npm install
@@ -190,7 +188,19 @@ npm run protocol:generate
 .\scripts\setup-local.ps1
 ```
 
-Läuft deine Datenbank woanders: `.\scripts\setup-local.ps1 -PgPort 55432 -ServerName "Mein Server"`.
+Es fragt nichts. Es legt eine eigene PostgreSQL-Instanz in
+`%LOCALAPPDATA%\FiveProtect\pgdata` an, auf Port 55432, nur auf Loopback, mit einem zufällig
+erzeugten Passwort. Eine bereits installierte PostgreSQL-Instanz bleibt unangetastet — kein
+Standardport, keine fremde Rolle, keine Konfiguration, die verändert wird. Danach schreibt es
+`services/backend/.env` mit frischem `NONCE_SEAL_KEY`, spielt die Migrationen ein und legt
+einen Mandanten an.
+
+Der Aufruf ist wiederholbar: eine vorhandene Instanz wird gestartet, nicht neu angelegt. Nach
+einem Neustart des Rechners einfach nochmal aufrufen.
+
+Wer stattdessen seine bestehende Datenbank nutzen will:
+`.\scripts\setup-local.ps1 -UseSystemPostgres -PgPort 5432` — dann wird nach dem
+Superuser-Passwort gefragt.
 
 <details>
 <summary>Ohne das Skript (Linux, macOS, oder von Hand)</summary>
@@ -211,7 +221,8 @@ npm run -w @fiveprotect/backend provision -- "Mein Server" --tier standard
 </details>
 
 `provision` gibt eine `serverId` und einen `serverKey` aus. **Der Schlüssel wird genau einmal
-angezeigt** — er steht nur als Hash in der Datenbank.
+angezeigt** — er steht nur als Hash in der Datenbank. Geht er verloren, legst du mit
+`provision` einen neuen Mandanten an.
 
 ### 2 · Backend starten
 
@@ -268,8 +279,9 @@ FiveM starten, auf den Server verbinden. Der Deferral hält kurz, der Companion 
 | Symptom | Ursache |
 | --- | --- |
 | `Der Anticheat-Dienst ist gerade nicht erreichbar` beim Verbinden | Backend läuft nicht oder `fiveprotect_backend` zeigt woanders hin. `curl http://127.0.0.1:8080/health` prüfen. |
-| `ECONNREFUSED` bei `migrate` | `DATABASE_URL` in der `.env` zeigt auf den falschen Port. Läuft PostgreSQL dort wirklich? |
-| `Passwort-Authentifizierung für Benutzer »…« fehlgeschlagen` | `createdb`/`psql` nimmt sonst den Windows-Benutzernamen als DB-Rolle. Immer `-U postgres` angeben. |
+| `ECONNREFUSED` bei `migrate` | Die Datenbank läuft nicht. `.\scripts\setup-local.ps1` erneut aufrufen — nach einem Neustart des Rechners ist der Cluster gestoppt. |
+| `Passwort-Authentifizierung für Benutzer »…« fehlgeschlagen` | `createdb`/`psql` nimmt ohne `-U` den Windows-Benutzernamen als DB-Rolle, und die gibt es in PostgreSQL nicht. |
+| Skript startet gar nicht | In PowerShell aufrufen, nicht in `cmd.exe`. Bei Richtlinienfehlern: `powershell -ExecutionPolicy Bypass -File .\scripts\setup-local.ps1`. |
 | Companion bleibt auf „Nicht verbunden" | Normal, solange FiveM nicht läuft. Bleibt er es beim Verbinden, fehlt die `fiveprotect.json` neben der Exe. |
 | `FiveProtect läuft nicht` im Deferral | Companion nicht gestartet, oder er lauscht auf keinem Port aus 52800–52899. |
 
